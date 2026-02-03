@@ -22,7 +22,7 @@ function handleContactForm(form) {
     // Получаем данные формы
     const formData = new FormData(form);
     const data = Object.fromEntries(formData);
-    
+     
     // Валидация формы
     if (!validateForm(form)) {
         return;
