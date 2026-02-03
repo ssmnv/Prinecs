@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Принтекс - типография в Йошкар-Оле</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+</head>
+<body>
+    <!-- Шапка сайта -->
+    <header>
+        <div class="container header-container">
+            <a href="#" class="logo" data-page="home">
+                <i class="fas fa-print logo-icon"></i>
+                <span>Printecs</span>
+            </a>
+            
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <nav>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="#" class="nav-link active" data-page="home">Главная</a></li>
+                    <li><a href="#" class="nav-link" data-page="about">О компании</a></li>
+                    <li><a href="#" class="nav-link" data-page="services">Услуги</a></li>
+                    <li><a href="#" class="nav-link" data-page="portfolio">Портфолио</a></li>
+                    <li><a href="#" class="nav-link" data-page="contacts">Контакты</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="page-content">
+    </main>
+
+    <!-- Подвал сайта -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-about">
+                    <div class="footer-logo">
+                        <i class="fas fa-print"></i> Printecs
+                    </div>
+                    <p>Типография "Printecs" в Йошкар-Оле предоставляет различные полиграфические услуги, а также занимается изготовлением и продажей сувенирной продукции.</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="ВКонтакте"><i class="fab fa-vk"></i></a>
+                        <a href="#" aria-label="Телеграм"><i class="fab fa-telegram"></i></a>
+                        <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-links">
+                    <h3>Навигация</h3>
+                    <ul>
+                        <li><a href="#" data-page="home">Главная</a></li>
+                        <li><a href="#" data-page="about">О компании</a></li>
+                        <li><a href="#" data-page="services">Услуги</a></li>
+                        <li><a href="#" data-page="portfolio">Портфолио</a></li>
+                        <li><a href="#" data-page="contacts">Контакты</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-contact">
+                    <h3>Контакты</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> г. Йошкар-Ола, ул. Суворова, 15А</p>
+                    <p><i class="fas fa-phone"></i> +7 (8362) 38-56-56</p>
+                    <p><i class="fas fa-clock"></i> Пн-Пт: 09:00–18:00</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Скрипты -->
+    <script src="js/navigation.js"></script>
+    <script src="js/form-handler.js"></script>
+    <script src="js/filter.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
