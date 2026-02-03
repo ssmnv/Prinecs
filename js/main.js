@@ -14,36 +14,25 @@ function initServiceFilter() {
         return;
     }
     
-    // Добавляем обработчики для кнопок фильтрации
     filterButtons.forEach(button => {
         button.addEventListener('click', function() {
-            console.log('Нажата кнопка фильтра:', this.getAttribute('data-filter'));
-            
-            // Обновляем активную кнопку
+            console.log('Нажата кнопка фильтра:', this.getAttribute('data-filter'));      
             filterButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Получаем выбранную категорию
-            const filterValue = this.getAttribute('data-filter');
-            
-            // Применяем фильтрацию
+            this.classList.add('active');        
+            const filterValue = this.getAttribute('data-filter');  
             filterServices(filterValue, serviceCards, servicesGrid, resultsCount);
         });
     });
     
-    // Инициализируем начальное состояние
     filterServices('all', serviceCards, servicesGrid, resultsCount);
-    
     console.log('Фильтрация инициализирована успешно');
 }
 
-// Функция фильтрации услуг
 function filterServices(filterValue, serviceCards, servicesGrid, resultsCount) {
     console.log('Фильтрация по категории:', filterValue);
     
     let visibleCount = 0;
     
-    // Сначала скрываем все карточки
     serviceCards.forEach(card => {
         card.style.display = 'none';
         card.style.opacity = '0';
@@ -51,16 +40,13 @@ function filterServices(filterValue, serviceCards, servicesGrid, resultsCount) {
         card.style.transition = 'all 0.5s ease';
     });
     
-    // Показываем соответствующие карточки
     setTimeout(() => {
         serviceCards.forEach(card => {
             const cardCategories = card.getAttribute('data-category');
             
-            // Проверяем, соответствует ли карточка фильтру
             if (filterValue === 'all' || (cardCategories && cardCategories.includes(filterValue))) {
                 card.style.display = 'block';
                 
-                // Анимация появления с задержкой
                 setTimeout(() => {
                     card.style.opacity = '1';
                     card.style.transform = 'translateY(0)';
@@ -69,16 +55,13 @@ function filterServices(filterValue, serviceCards, servicesGrid, resultsCount) {
                 visibleCount++;
             }
         });
-        
-        // Обновляем счетчик результатов
+
         if (resultsCount) {
             resultsCount.innerHTML = `Найдено: <span>${visibleCount}</span> ${getServiceWord(visibleCount)}`;
         }
-        
-        // Если нет результатов, показываем сообщение
+
         showNoResultsMessage(visibleCount, servicesGrid);
-        
-        // Анимация для всей сетки
+
         if (servicesGrid) {
             servicesGrid.style.animation = 'none';
             setTimeout(() => {
@@ -90,7 +73,6 @@ function filterServices(filterValue, serviceCards, servicesGrid, resultsCount) {
     }, 50);
 }
 
-// Функция для правильного склонения слова "услуга"
 function getServiceWord(count) {
     if (count % 10 === 1 && count % 100 !== 11) {
         return 'услуга';
@@ -101,15 +83,11 @@ function getServiceWord(count) {
     }
 }
 
-// Функция для показа сообщения "Нет результатов"
 function showNoResultsMessage(visibleCount, servicesGrid) {
-    // Удаляем предыдущее сообщение, если оно есть
     const existingMessage = servicesGrid.querySelector('.no-results');
     if (existingMessage) {
         existingMessage.remove();
     }
-    
-    // Если нет видимых карточек, добавляем сообщение
     if (visibleCount === 0 && servicesGrid) {
         const noResultsDiv = document.createElement('div');
         noResultsDiv.className = 'no-results';
@@ -119,8 +97,6 @@ function showNoResultsMessage(visibleCount, servicesGrid) {
             <p>Попробуйте выбрать другую категорию или <a href="#" data-page="contacts">свяжитесь с нами</a> для индивидуального заказа</p>
         `;
         servicesGrid.appendChild(noResultsDiv);
-        
-        // Добавляем обработчик для ссылки "свяжитесь с нами"
         const contactLink = noResultsDiv.querySelector('a[data-page="contacts"]');
         if (contactLink) {
             contactLink.addEventListener('click', function(e) {
@@ -131,7 +107,6 @@ function showNoResultsMessage(visibleCount, servicesGrid) {
     }
 }
 
-// Функция для инициализации формы контактов
 function initContactForm() {
     const contactForm = document.getElementById('contactForm');
     if (!contactForm) return;
@@ -141,26 +116,20 @@ function initContactForm() {
     contactForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Получаем данные формы
         const name = document.getElementById('name').value.trim();
         const phone = document.getElementById('phone').value.trim();
         const email = document.getElementById('email').value.trim();
         const message = document.getElementById('message').value.trim();
         
-        // Простая валидация
         if (!name || !phone || !message) {
             alert('Пожалуйста, заполните обязательные поля: Имя, Телефон и Сообщение');
             return;
         }
-        
-        // Валидация телефона (простая)
         const phoneRegex = /^[\d\s\-\+\(\)]{10,}$/;
         if (!phoneRegex.test(phone)) {
             alert('Пожалуйста, введите корректный номер телефона');
             return;
         }
-        
-        // Валидация email (если указан)
         if (email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
@@ -168,50 +137,34 @@ function initContactForm() {
                 return;
             }
         }
-        
-        // Показываем индикатор загрузки
+
         const submitBtn = contactForm.querySelector('button[type="submit"]');
         const originalText = submitBtn.textContent;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
         submitBtn.disabled = true;
         
-        // Имитация отправки на сервер
         setTimeout(() => {
-            // В реальном проекте здесь будет отправка на сервер
             console.log('Данные формы:', { name, phone, email, message });
             
-            // Показываем сообщение об успехе
             alert(`Спасибо, ${name}! Ваше сообщение отправлено. Мы свяжемся с вами в ближайшее время по телефону ${phone}.`);
-            
-            // Восстанавливаем кнопку
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
-            
-            // Очищаем форму
             contactForm.reset();
         }, 1500);
     });
 }
 
-// Экспортируем функцию loadPage для использования в других скриптах
 window.loadPage = loadPage;
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Сайт типографии "Принтекс" загружен');
-    
-    // Загружаем главную страницу
     loadPage('home');
-    
-    // Инициализируем анимации
     initAnimations();
 });
 
-// Функция переключения страниц (из navigation.js)
 function loadPage(pageId) {
-    // Обновляем текущую страницу
     window.currentPage = pageId;
-    
-    // Обновляем активную ссылку в навигации
+
     document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.remove('active');
         if (link.getAttribute('data-page') === pageId) {
@@ -219,10 +172,8 @@ function loadPage(pageId) {
         }
     });
     
-    // Загружаем контент страницы
     loadPageContent(pageId);
     
-    // Закрываем мобильное меню, если оно открыто
     const navLinksContainer = document.getElementById('navLinks');
     if (navLinksContainer && navLinksContainer.classList.contains('active')) {
         navLinksContainer.classList.remove('active');
@@ -234,10 +185,7 @@ function loadPage(pageId) {
         }
     }
     
-    // Обновляем URL в адресной строке
     history.pushState({ page: pageId }, '', `#${pageId}`);
-    
-    // Прокручиваем к верху страницы
     window.scrollTo(0, 0);
 }
 
@@ -255,46 +203,35 @@ function initAnimations() {
         });
     }
     
-    // Инициализация анимации при загрузке
     animateOnScroll();
     
-    // Анимация при скролле
     window.addEventListener('scroll', animateOnScroll);
 }
 
 function loadPageContent(pageId) {
     const pageContent = document.getElementById('page-content');
     
-    // Показываем индикатор загрузки
     pageContent.innerHTML = '<div class="loading"></div>';
     
-    // Имитация задержки загрузки
+
     setTimeout(() => {
         fetchPage(pageId)
             .then(html => {
                 pageContent.innerHTML = html;
-                
-                // Инициализируем анимации для загруженного контента
                 initAnimations();
-                
-                // Инициализируем фильтрацию, если это страница услуг
                 if (pageId === 'services') {
                     console.log('Страница услуг загружена, инициализируем фильтрацию');
-                    // Даем время DOM на обновление
                     setTimeout(() => {
                         initServiceFilter();
                     }, 100);
                 }
                 
-                // Инициализируем форму, если это страница контактов
                 if (pageId === 'contacts') {
-                    // Даем время DOM на обновление
                     setTimeout(() => {
                         initContactForm();
                     }, 100);
                 }
                 
-                // Добавляем обработчики для всех ссылок на странице
                 addPageEventListeners();
             })
             .catch(error => {
@@ -304,9 +241,7 @@ function loadPageContent(pageId) {
     }, 300);
 }
 
-// Добавление обработчиков событий для ссылок на загруженной странице
 function addPageEventListeners() {
-    // Обработчики для навигационных ссылок
     const pageLinks = document.querySelectorAll('.page-content a[data-page]');
     pageLinks.forEach(link => {
         link.addEventListener('click', function(e) {
@@ -318,7 +253,6 @@ function addPageEventListeners() {
         });
     });
     
-    // Обработчики для кнопок с data-page
     const pageButtons = document.querySelectorAll('.page-content .btn[data-page]');
     pageButtons.forEach(button => {
         button.addEventListener('click', function(e) {
@@ -755,7 +689,7 @@ function fetchPage(pageId) {
                                     </div>
                                     <div>
                                         <h3>Email</h3>
-                                        <p>info@printecs.com</p>
+                                        <p>printecs.com.</p>
                                     </div>
                                 </div>
                                 
