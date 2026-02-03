@@ -1,14 +1,247 @@
+function initServiceFilter() {
+    console.log('Инициализация фильтрации услуг...');
+    
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const serviceCards = document.querySelectorAll('.service-card');
+    const servicesGrid = document.getElementById('servicesGrid');
+    const resultsCount = document.getElementById('resultsCount');
+    
+    console.log('Найдено кнопок фильтрации:', filterButtons.length);
+    console.log('Найдено карточек услуг:', serviceCards.length);
+    
+    if (!filterButtons.length || !serviceCards.length) {
+        console.error('Элементы фильтрации не найдены!');
+        return;
+    }
+    
+    // Добавляем обработчики для кнопок фильтрации
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            console.log('Нажата кнопка фильтра:', this.getAttribute('data-filter'));
+            
+            // Обновляем активную кнопку
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Получаем выбранную категорию
+            const filterValue = this.getAttribute('data-filter');
+            
+            // Применяем фильтрацию
+            filterServices(filterValue, serviceCards, servicesGrid, resultsCount);
+        });
+    });
+    
+    // Инициализируем начальное состояние
+    filterServices('all', serviceCards, servicesGrid, resultsCount);
+    
+    console.log('Фильтрация инициализирована успешно');
+}
+
+// Функция фильтрации услуг
+function filterServices(filterValue, serviceCards, servicesGrid, resultsCount) {
+    console.log('Фильтрация по категории:', filterValue);
+    
+    let visibleCount = 0;
+    
+    // Сначала скрываем все карточки
+    serviceCards.forEach(card => {
+        card.style.display = 'none';
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'all 0.5s ease';
+    });
+    
+    // Показываем соответствующие карточки
+    setTimeout(() => {
+        serviceCards.forEach(card => {
+            const cardCategories = card.getAttribute('data-category');
+            
+            // Проверяем, соответствует ли карточка фильтру
+            if (filterValue === 'all' || (cardCategories && cardCategories.includes(filterValue))) {
+                card.style.display = 'block';
+                
+                // Анимация появления с задержкой
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100 * visibleCount);
+                
+                visibleCount++;
+            }
+        });
+        
+        // Обновляем счетчик результатов
+        if (resultsCount) {
+            resultsCount.innerHTML = `Найдено: <span>${visibleCount}</span> ${getServiceWord(visibleCount)}`;
+        }
+        
+        // Если нет результатов, показываем сообщение
+        showNoResultsMessage(visibleCount, servicesGrid);
+        
+        // Анимация для всей сетки
+        if (servicesGrid) {
+            servicesGrid.style.animation = 'none';
+            setTimeout(() => {
+                servicesGrid.style.animation = 'fadeInGrid 0.8s ease forwards';
+            }, 50);
+        }
+        
+        console.log('Отфильтровано карточек:', visibleCount);
+    }, 50);
+}
+
+// Функция для правильного склонения слова "услуга"
+function getServiceWord(count) {
+    if (count % 10 === 1 && count % 100 !== 11) {
+        return 'услуга';
+    } else if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) {
+        return 'услуги';
+    } else {
+        return 'услуг';
+    }
+}
+
+// Функция для показа сообщения "Нет результатов"
+function showNoResultsMessage(visibleCount, servicesGrid) {
+    // Удаляем предыдущее сообщение, если оно есть
+    const existingMessage = servicesGrid.querySelector('.no-results');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // Если нет видимых карточек, добавляем сообщение
+    if (visibleCount === 0 && servicesGrid) {
+        const noResultsDiv = document.createElement('div');
+        noResultsDiv.className = 'no-results';
+        noResultsDiv.innerHTML = `
+            <i class="fas fa-search"></i>
+            <h3>Услуги не найдены</h3>
+            <p>Попробуйте выбрать другую категорию или <a href="#" data-page="contacts">свяжитесь с нами</a> для индивидуального заказа</p>
+        `;
+        servicesGrid.appendChild(noResultsDiv);
+        
+        // Добавляем обработчик для ссылки "свяжитесь с нами"
+        const contactLink = noResultsDiv.querySelector('a[data-page="contacts"]');
+        if (contactLink) {
+            contactLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                loadPage('contacts');
+            });
+        }
+    }
+}
+
+// Функция для инициализации формы контактов
+function initContactForm() {
+    const contactForm = document.getElementById('contactForm');
+    if (!contactForm) return;
+    
+    console.log('Инициализация формы контактов...');
+    
+    contactForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Получаем данные формы
+        const name = document.getElementById('name').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const message = document.getElementById('message').value.trim();
+        
+        // Простая валидация
+        if (!name || !phone || !message) {
+            alert('Пожалуйста, заполните обязательные поля: Имя, Телефон и Сообщение');
+            return;
+        }
+        
+        // Валидация телефона (простая)
+        const phoneRegex = /^[\d\s\-\+\(\)]{10,}$/;
+        if (!phoneRegex.test(phone)) {
+            alert('Пожалуйста, введите корректный номер телефона');
+            return;
+        }
+        
+        // Валидация email (если указан)
+        if (email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Пожалуйста, введите корректный email адрес');
+                return;
+            }
+        }
+        
+        // Показываем индикатор загрузки
+        const submitBtn = contactForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
+        submitBtn.disabled = true;
+        
+        // Имитация отправки на сервер
+        setTimeout(() => {
+            // В реальном проекте здесь будет отправка на сервер
+            console.log('Данные формы:', { name, phone, email, message });
+            
+            // Показываем сообщение об успехе
+            alert(`Спасибо, ${name}! Ваше сообщение отправлено. Мы свяжемся с вами в ближайшее время по телефону ${phone}.`);
+            
+            // Восстанавливаем кнопку
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+            
+            // Очищаем форму
+            contactForm.reset();
+        }, 1500);
+    });
+}
+
+// Экспортируем функцию loadPage для использования в других скриптах
+window.loadPage = loadPage;
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Сайт типографии "Принтекс" загружен');
     
+    // Загружаем главную страницу
     loadPage('home');
     
+    // Инициализируем анимации
     initAnimations();
 });
 
-function initAnimations() {
+// Функция переключения страниц (из navigation.js)
+function loadPage(pageId) {
+    // Обновляем текущую страницу
+    window.currentPage = pageId;
+    
+    // Обновляем активную ссылку в навигации
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('data-page') === pageId) {
+            link.classList.add('active');
+        }
+    });
+    
+    // Загружаем контент страницы
+    loadPageContent(pageId);
+    
+    // Закрываем мобильное меню, если оно открыто
+    const navLinksContainer = document.getElementById('navLinks');
+    if (navLinksContainer && navLinksContainer.classList.contains('active')) {
+        navLinksContainer.classList.remove('active');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        if (mobileMenuBtn) {
+            const icon = mobileMenuBtn.querySelector('i');
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+        }
+    }
+    
+    // Обновляем URL в адресной строке
+    history.pushState({ page: pageId }, '', `#${pageId}`);
+    
+    // Прокручиваем к верху страницы
+    window.scrollTo(0, 0);
+}
 
+function initAnimations() {
     function animateOnScroll() {
         const elements = document.querySelectorAll('.fade-in');
         
@@ -22,21 +255,47 @@ function initAnimations() {
         });
     }
     
+    // Инициализация анимации при загрузке
     animateOnScroll();
     
+    // Анимация при скролле
     window.addEventListener('scroll', animateOnScroll);
 }
 
 function loadPageContent(pageId) {
     const pageContent = document.getElementById('page-content');
     
+    // Показываем индикатор загрузки
     pageContent.innerHTML = '<div class="loading"></div>';
     
+    // Имитация задержки загрузки
     setTimeout(() => {
         fetchPage(pageId)
             .then(html => {
                 pageContent.innerHTML = html;
+                
+                // Инициализируем анимации для загруженного контента
                 initAnimations();
+                
+                // Инициализируем фильтрацию, если это страница услуг
+                if (pageId === 'services') {
+                    console.log('Страница услуг загружена, инициализируем фильтрацию');
+                    // Даем время DOM на обновление
+                    setTimeout(() => {
+                        initServiceFilter();
+                    }, 100);
+                }
+                
+                // Инициализируем форму, если это страница контактов
+                if (pageId === 'contacts') {
+                    // Даем время DOM на обновление
+                    setTimeout(() => {
+                        initContactForm();
+                    }, 100);
+                }
+                
+                // Добавляем обработчики для всех ссылок на странице
+                addPageEventListeners();
             })
             .catch(error => {
                 console.error('Ошибка загрузки страницы:', error);
@@ -45,9 +304,34 @@ function loadPageContent(pageId) {
     }, 300);
 }
 
+// Добавление обработчиков событий для ссылок на загруженной странице
+function addPageEventListeners() {
+    // Обработчики для навигационных ссылок
+    const pageLinks = document.querySelectorAll('.page-content a[data-page]');
+    pageLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const pageId = this.getAttribute('data-page');
+            if (pageId) {
+                loadPage(pageId);
+            }
+        });
+    });
+    
+    // Обработчики для кнопок с data-page
+    const pageButtons = document.querySelectorAll('.page-content .btn[data-page]');
+    pageButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const pageId = this.getAttribute('data-page');
+            if (pageId) {
+                loadPage(pageId);
+            }
+        });
+    });
+}
 
 function fetchPage(pageId) {
-
     return new Promise((resolve) => {
         const pages = {
             'home': `
@@ -67,7 +351,7 @@ function fetchPage(pageId) {
                         <div class="services-grid">
                             <div class="service-card fade-in">
                                 <div class="service-img">
-                                    <img src="vizitki.jpg" alt="Печать визиток">
+                                    <img src="vizitki.jpg" alt="Печать визиток" loading="lazy">
                                 </div>
                                 <div class="service-content">
                                     <h3>Визитки и бейджи</h3>
@@ -77,7 +361,7 @@ function fetchPage(pageId) {
                             
                             <div class="service-card fade-in">
                                 <div class="service-img">
-                                    <img src="banner.jpgы" alt="Широкоформатная печать">
+                                    <img src="banner.jpg" alt="Широкоформатная печать" loading="lazy">
                                 </div>
                                 <div class="service-content">
                                     <h3>Широкоформатная печать</h3>
@@ -87,7 +371,7 @@ function fetchPage(pageId) {
                             
                             <div class="service-card fade-in">
                                 <div class="service-img">
-                                    <img src="jurnali.jpg" alt="Печать каталогов">
+                                    <img src="jurnali.jpg" alt="Печать каталогов" loading="lazy">
                                 </div>
                                 <div class="service-content">
                                     <h3>Каталоги и брошюры</h3>
@@ -105,7 +389,7 @@ function fetchPage(pageId) {
                 <section class="about-preview">
                     <div class="container about-container">
                         <div class="about-img fade-in">
-                            <img src="prr.jpg" alt="О компании Printecs">
+                            <img src="prr.jpg" alt="О компании Printecs" loading="lazy">
                         </div>
                         <div class="about-content fade-in">
                             <h2>О компании "Printecs"</h2>
@@ -133,7 +417,7 @@ function fetchPage(pageId) {
                     <div class="container">
                         <div class="about-container">
                             <div class="about-img">
-                                <img src="print.jpg" alt="О компании Printecs">
+                                <img src="print.jpg" alt="О компании Printecs" loading="lazy">
                             </div>
                             <div class="about-content">
                                 <h2>Наша история</h2>
@@ -159,7 +443,7 @@ function fetchPage(pageId) {
                             <div class="services-grid">
                                 <div class="service-card">
                                     <div class="service-img">
-                                        <img src="diz.jpg" alt="Дизайнер">
+                                        <img src="diz.jpg" alt="Дизайнер" loading="lazy">
                                     </div>
                                     <div class="service-content">
                                         <h3>Отдел дизайна</h3>
@@ -169,7 +453,7 @@ function fetchPage(pageId) {
                                 
                                 <div class="service-card">
                                     <div class="service-img">
-                                        <img src="cex.jpg" alt="Печатник">
+                                        <img src="cex.jpg" alt="Печатник" loading="lazy">
                                     </div>
                                     <div class="service-content">
                                         <h3>Печатный цех</h3>
@@ -179,7 +463,7 @@ function fetchPage(pageId) {
                                 
                                 <div class="service-card">
                                     <div class="service-img">
-                                        <img src="pocle.jpg" alt="Послепечатная обработка">
+                                        <img src="pocle.jpg" alt="Послепечатная обработка" loading="lazy">
                                     </div>
                                     <div class="service-content">
                                         <h3>Послепечатная обработка</h3>
@@ -191,160 +475,158 @@ function fetchPage(pageId) {
                     </div>
                 </div>
             `,
-            
-
-'services': `
-    <div class="page-header">
-        <div class="container">
-            <h1>Наши услуги</h1>
-            <div class="breadcrumb">
-                <a href="#" data-page="home">Главная</a>
-                <span class="separator">/</span>
-                <span>Услуги</span>
-            </div>
-        </div>
-    </div>
-    
-    <div class="page-content">
-        <div class="container">
-            <h2 class="text-center">Полиграфические услуги в Йошкар-Оле</h2>
-            <p class="text-center" style="max-width: 800px; margin: 0 auto 40px;">Мы предлагаем полный цикл полиграфических услуг от создания дизайна до послепечатной обработки. Работаем как с крупными тиражами, так и с единичными экземплярами.</p>
-            
-            <!-- Фильтры по категориям -->
-            <div class="filter-buttons" id="serviceFilters">
-                <button class="filter-btn active" data-filter="all">Все услуги</button>
-                <button class="filter-btn" data-filter="business">Для бизнеса</button>
-                <button class="filter-btn" data-filter="advertising">Реклама</button>
-                <button class="filter-btn" data-filter="design">Дизайн</button>
-                <button class="filter-btn" data-filter="postpress">Постпечать</button>
-                <button class="filter-btn" data-filter="souvenir">Сувениры</button>
-            </div>
-            
-            <div class="results-count" id="resultsCount">Найдено: <span>6</span> услуг</div>
-            
-            <div class="services-list">
-                <div class="services-grid" id="servicesGrid">
-                    <!-- Карточки услуг с атрибутами data-category -->
-                    <div class="service-card" data-category="business design">
-                        <div class="service-img">
-                            <img src="vizitki.jpg" alt="Печать визиток">
-                        </div>
-                        <div class="service-content">
-                            <h3>Визитки и бейджи</h3>
-                            <p>Изготовление визиток, бейджей, пропусков и другой представительской продукции. Используем различные материалы и виды отделки.</p>
-                            <ul class="service-features">
-                                <li>Визитки стандартные и нестандартные</li>
-                                <li>Бейджи для сотрудников</li>
-                                <li>Пропуска и удостоверения</li>
-                                <li>Карты лояльности</li>
-                            </ul>
-                            <div class="service-tags">
-                                <span class="service-tag business">Для бизнеса</span>
-                                <span class="service-tag design">Дизайн</span>
-                            </div>
+            'services': `
+                <div class="page-header">
+                    <div class="container">
+                        <h1>Наши услуги</h1>
+                        <div class="breadcrumb">
+                            <a href="#" data-page="home">Главная</a>
+                            <span class="separator">/</span>
+                            <span>Услуги</span>
                         </div>
                     </div>
-                    
-                    <div class="service-card" data-category="advertising">
-                        <div class="service-img">
-                            <img src="banner.jpg" alt="Широкоформатная печать">
+                </div>
+                
+                <div class="page-content">
+                    <div class="container">
+                        <h2 class="text-center">Полиграфические услуги в Йошкар-Оле</h2>
+                        <p class="text-center" style="max-width: 800px; margin: 0 auto 40px;">Мы предлагаем полный цикл полиграфических услуг от создания дизайна до послепечатной обработки. Работаем как с крупными тиражами, так и с единичными экземплярами.</p>
+                        
+                        <!-- Фильтры по категориям -->
+                        <div class="filter-buttons" id="serviceFilters">
+                            <button class="filter-btn active" data-filter="all">Все услуги</button>
+                            <button class="filter-btn" data-filter="business">Для бизнеса</button>
+                            <button class="filter-btn" data-filter="advertising">Реклама</button>
+                            <button class="filter-btn" data-filter="design">Дизайн</button>
+                            <button class="filter-btn" data-filter="postpress">Постпечать</button>
+                            <button class="filter-btn" data-filter="souvenir">Сувениры</button>
                         </div>
-                        <div class="service-content">
-                            <h3>Широкоформатная печать</h3>
-                            <p>Печать баннеров, плакатов, постеров, стендов и другой рекламной продукции большого формата.</p>
-                            <ul class="service-features">
-                                <li>Баннеры</li>
-                                <li>Плакаты и постеры</li>
-                                <li>Стенды</li>
-                                <li>Печать на самоклеющейся пленке</li>
-                            </ul>
-                            <div class="service-tags">
-                                <span class="service-tag advertising">Реклама</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="service-card" data-category="business">
-                        <div class="service-img">
-                            <img src="jurnali.jpg" alt="Печать каталогов">
-                        </div>
-                        <div class="service-content">
-                            <h3>Каталоги и брошюры</h3>
-                            <p>Создание каталогов, брошюр, журналов и другой многостраничной продукции с различными видами переплета.</p>
-                            <ul class="service-features">
-                                <li>Каталоги продукции</li>
-                                <li>Брошюры и буклеты</li>
-                                <li>Журналы и газеты</li>
-                                <li>Годовые отчеты</li>
-                            </ul>
-                            <div class="service-tags">
-                                <span class="service-tag business">Для бизнеса</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="service-card" data-category="souvenir business">
-                        <div class="service-img">
-                            <img src="bloknot.jpg" alt="Сувенирная продукция">
-                        </div>
-                        <div class="service-content">
-                            <h3>Сувенирная продукция</h3>
-                            <p>Изготовление сувенирной продукции с нанесением логотипов и другой информации.</p>
-                            <ul class="service-features">
-                                <li>Календари различных форматов</li>
-                                <li>Блокноты и ежедневники</li>
-                                <li>Пакеты и сумки</li>
-                                <li>Ручки с логотипом</li>
-                            </ul>
-                            <div class="service-tags">
-                                <span class="service-tag souvenir">Сувениры</span>
-                                <span class="service-tag business">Для бизнеса</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="service-card" data-category="design">
-                        <div class="service-img">
-                            <img src="verstca.jpg" alt="Дизайн и верстка">
-                        </div>
-                        <div class="service-content">
-                            <h3>Дизайн и верстка</h3>
-                            <p>Профессиональная разработка дизайна и верстка полиграфической продукции любой сложности.</p>
-                            <ul class="service-features">
-                                <li>Разработка фирменного стиля</li>
-                                <li>Дизайн полиграфической продукции</li>
-                                <li>Верстка многостраничных изданий</li>
-                                <li>Подготовка макетов к печати</li>
-                            </ul>
-                            <div class="service-tags">
-                                <span class="service-tag design">Дизайн</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="service-card" data-category="postpress">
-                        <div class="service-img">
-                            <img src="pocle.jpg" alt="Послепечатная обработка">
-                        </div>
-                        <div class="service-content">
-                            <h3>Послепечатная обработка</h3>
-                            <p>Полный спектр услуг по послепечатной обработке для придания продукции завершенного вида.</p>
-                            <ul class="service-features">
-                                <li>Ламинация и лакирование</li>
-                                <li>Вырубка и биговка</li>
-                                <li>Фальцовка и брошюровка</li>
-                                <li>Тиснение и конгрев</li>
-                            </ul>
-                            <div class="service-tags">
-                                <span class="service-tag postpress">Постпечать</span>
+                        
+                        <div class="results-count" id="resultsCount">Найдено: <span>6</span> услуг</div>
+                        
+                        <div class="services-list">
+                            <div class="services-grid" id="servicesGrid">
+                                <!-- Карточки услуг с атрибутами data-category -->
+                                <div class="service-card" data-category="business design">
+                                    <div class="service-img">
+                                        <img src="vizitki.jpg" alt="Печать визиток" loading="lazy">
+                                    </div>
+                                    <div class="service-content">
+                                        <h3>Визитки и бейджи</h3>
+                                        <p>Изготовление визиток, бейджей, пропусков и другой представительской продукции. Используем различные материалы и виды отделки.</p>
+                                        <ul class="service-features">
+                                            <li>Визитки стандартные и нестандартные</li>
+                                            <li>Бейджи для сотрудников</li>
+                                            <li>Пропуска и удостоверения</li>
+                                            <li>Карты лояльности</li>
+                                        </ul>
+                                        <div class="service-tags">
+                                            <span class="service-tag business">Для бизнеса</span>
+                                            <span class="service-tag design">Дизайн</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="service-card" data-category="advertising">
+                                    <div class="service-img">
+                                        <img src="banner.jpg" alt="Широкоформатная печать" loading="lazy">
+                                    </div>
+                                    <div class="service-content">
+                                        <h3>Широкоформатная печать</h3>
+                                        <p>Печать баннеров, плакатов, постеров, стендов и другой рекламной продукции большого формата.</p>
+                                        <ul class="service-features">
+                                            <li>Баннеры</li>
+                                            <li>Плакаты и постеры</li>
+                                            <li>Стенды</li>
+                                            <li>Печать на самоклеющейся пленке</li>
+                                        </ul>
+                                        <div class="service-tags">
+                                            <span class="service-tag advertising">Реклама</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="service-card" data-category="business">
+                                    <div class="service-img">
+                                        <img src="jurnali.jpg" alt="Печать каталогов" loading="lazy">
+                                    </div>
+                                    <div class="service-content">
+                                        <h3>Каталоги и брошюры</h3>
+                                        <p>Создание каталогов, брошюр, журналов и другой многостраничной продукции с различными видами переплета.</p>
+                                        <ul class="service-features">
+                                            <li>Каталоги продукции</li>
+                                            <li>Брошюры и буклеты</li>
+                                            <li>Журналы и газеты</li>
+                                            <li>Годовые отчеты</li>
+                                        </ul>
+                                        <div class="service-tags">
+                                            <span class="service-tag business">Для бизнеса</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="service-card" data-category="souvenir business">
+                                    <div class="service-img">
+                                        <img src="bloknot.jpg" alt="Сувенирная продукция" loading="lazy">
+                                    </div>
+                                    <div class="service-content">
+                                        <h3>Сувенирная продукция</h3>
+                                        <p>Изготовление сувенирной продукции с нанесением логотипов и другой информации.</p>
+                                        <ul class="service-features">
+                                            <li>Календари различных форматов</li>
+                                            <li>Блокноты и ежедневники</li>
+                                            <li>Пакеты и сумки</li>
+                                            <li>Ручки с логотипом</li>
+                                        </ul>
+                                        <div class="service-tags">
+                                            <span class="service-tag souvenir">Сувениры</span>
+                                            <span class="service-tag business">Для бизнеса</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="service-card" data-category="design">
+                                    <div class="service-img">
+                                        <img src="verstca.jpg" alt="Дизайн и верстка" loading="lazy">
+                                    </div>
+                                    <div class="service-content">
+                                        <h3>Дизайн и верстка</h3>
+                                        <p>Профессиональная разработка дизайна и верстка полиграфической продукции любой сложности.</p>
+                                        <ul class="service-features">
+                                            <li>Разработка фирменного стиля</li>
+                                            <li>Дизайн полиграфической продукции</li>
+                                            <li>Верстка многостраничных изданий</li>
+                                            <li>Подготовка макетов к печати</li>
+                                        </ul>
+                                        <div class="service-tags">
+                                            <span class="service-tag design">Дизайн</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="service-card" data-category="postpress">
+                                    <div class="service-img">
+                                        <img src="pocle.jpg" alt="Послепечатная обработка" loading="lazy">
+                                    </div>
+                                    <div class="service-content">
+                                        <h3>Послепечатная обработка</h3>
+                                        <p>Полный спектр услуг по послепечатной обработке для придания продукции завершенного вида.</p>
+                                        <ul class="service-features">
+                                            <li>Ламинация и лакирование</li>
+                                            <li>Вырубка и биговка</li>
+                                            <li>Фальцовка и брошюровка</li>
+                                            <li>Тиснение и конгрев</li>
+                                        </ul>
+                                        <div class="service-tags">
+                                            <span class="service-tag postpress">Постпечать</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-`,
+            `,
             'portfolio': `
                 <div class="page-header">
                     <div class="container">
@@ -366,55 +648,61 @@ function fetchPage(pageId) {
                             <div class="portfolio-grid">
                                 <div class="portfolio-card">
                                     <div class="portfolio-img">
-                                        <img src="korpvizit.jpg" alt="Корпоративные визитки">
+                                        <img src="korpvizit.jpg" alt="Корпоративные визитки" loading="lazy">
                                     </div>
                                     <div class="portfolio-content">
                                         <h3>Корпоративные визитки</h3>
+                                        <p>Разработка дизайна и печать визиток для сети магазинов "МариТорг". Использована двухсторонняя печать, ламинация и скругление углов.</p>
                                     </div>
                                 </div>
                                 
                                 <div class="portfolio-card">
                                     <div class="portfolio-img">
-                                        <img src="reklbanner.jpg" alt="Рекламный баннер">
+                                        <img src="reklbanner.jpg" alt="Рекламный баннер" loading="lazy">
                                     </div>
                                     <div class="portfolio-content">
                                         <h3>Рекламный баннер</h3>
+                                        <p>Изготовление широкоформатного баннера 3x6 м для рекламной кампании автосалона "Максимум". Печать на баннерной ткани с защитным ламинатом.</p>
                                     </div>
                                 </div>
                                 
                                 <div class="portfolio-card">
                                     <div class="portfolio-img">
-                                        <img src="katalog.jpg" alt="Каталог продукции">
+                                        <img src="katalog.jpg" alt="Каталог продукции" loading="lazy">
                                     </div>
                                     <div class="portfolio-content">
                                         <h3>Каталог продукции</h3>
+                                        <p>Создание полноцветного каталога для производителя мебели "Марийский Дом". 64 страницы, мягкий переплет, тираж 1000 экземпляров.</p>
                                     </div>
                                 </div>
                                 
                                 <div class="portfolio-card">
                                     <div class="portfolio-img">
-                                        <img src="kalendari.jpg" alt="Фирменные календари">
+                                        <img src="kalendari.jpg" alt="Фирменные календари" loading="lazy">
                                     </div>
                                     <div class="portfolio-content">
                                         <h3>Фирменные календари</h3>
+                                        <p>Печать квартальных календарей для банка "Йошкар-Ола". Двухсторонняя печать, металлическая пружина, индивидуальная упаковка.</p>
                                     </div>
                                 </div>
                                 
                                 <div class="portfolio-card">
                                     <div class="portfolio-img">
-                                        <img src="listovki.jpg" alt="Листовки и флаеры">
+                                        <img src="listovki.jpg" alt="Листовки и флаеры" loading="lazy">
                                     </div>
                                     <div class="portfolio-content">
                                         <h3>Листовки и флаеры</h3>
+                                        <p>Печать рекламных листовок для сети ресторанов "Восток". Формат А5, двухсторонняя полноцветная печать, тираж 5000 экземпляров.</p>
                                     </div>
                                 </div>
                                 
                                 <div class="portfolio-card">
                                     <div class="portfolio-img">
-                                        <img src="ypokovki.jpg" alt="Упаковка и этикетки">
+                                        <img src="ypokovki.jpg" alt="Упаковка и этикетки" loading="lazy">
                                     </div>
                                     <div class="portfolio-content">
                                         <h3>Упаковка и этикетки</h3>
+                                        <p>Разработка дизайна и печать этикеток для продукции местного кондитерского производства "Марийские сладости".</p>
                                     </div>
                                 </div>
                             </div>
@@ -422,7 +710,6 @@ function fetchPage(pageId) {
                     </div>
                 </div>
             `,
-
             'contacts': `
                 <div class="page-header">
                     <div class="container">
@@ -468,7 +755,7 @@ function fetchPage(pageId) {
                                     </div>
                                     <div>
                                         <h3>Email</h3>
-                                        <p>@printecs.com.</p>
+                                        <p>info@printecs.com</p>
                                     </div>
                                 </div>
                                 
@@ -510,8 +797,6 @@ function fetchPage(pageId) {
                                 </form>
                             </div>
                         </div>
-                        
-                       
                     </div>
                 </div>
             `
